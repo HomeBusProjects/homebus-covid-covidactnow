@@ -1,0 +1,18 @@
+[Unit]
+Description=Homebus COVIDActNow stats publisher
+After=network.target
+
+[Service]
+Type=simple
+
+User=homebus
+WorkingDirectory=/home/homebus/homebus-covid-covidactnow
+
+ExecStart=/home/homebus/.rbenv/bin/rbenv exec bundle exec homebus-covid-covidactnow.rb
+TimeoutSec=30
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

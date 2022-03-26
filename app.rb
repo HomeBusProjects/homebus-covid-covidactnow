@@ -23,6 +23,7 @@ class COVIDActNowHomebusApp < Homebus::App
 
   def setup!
     Dotenv.load('.env')
+
     @api_key = ENV['API_KEY']
     @fips_code = ENV['FIPS_CODE']
 
@@ -30,7 +31,6 @@ class COVIDActNowHomebusApp < Homebus::App
                                   manufacturer: 'Homebus',
                                   model: 'COVID ActNow stats publisher',
                                   serial_number: @fips_code
-
   end
 
   def _url
@@ -38,7 +38,7 @@ class COVIDActNowHomebusApp < Homebus::App
   end
 
   def _get_stats
-#    return JSON.parse File.read('cases.json'), symbolize_names: true
+    #    return JSON.parse File.read('cases.json'), symbolize_names: true
 
     begin
       uri = URI(_url)
@@ -49,6 +49,37 @@ class COVIDActNowHomebusApp < Homebus::App
     rescue
       nil
     end
+  end
+
+  def _cases_payload(stats)
+    {
+      update_date: stats[:lastUpdatedDate],
+      population: stats[:population],
+      positivity_ratio: stats[:metrics][:testPositivityRatio],
+      case_density: stats[:metrics][:caseDensity],
+      new_cases: stats[:actuals][:newCases],
+      infection_rate: stats[:metrics][:infectionRate],
+    }
+  end
+
+  def _hospitalizations_payload(stats)
+    {
+      update_date: stats[:lastUpdatedDate],
+      hospital_covid_ratio: (stats[:actuals][:hospitalBeds][:currentUsageCovid] / stats[:actuals][:hospitalBeds][:capacity].to_f).truncate(2),
+      hospital_ratio: (stats[:actuals][:hospitalBeds][:currentUsageTotal] / stats[:actuals][:hospitalBeds][:capacity].to_f).truncate(2),
+      icu_covid_ratio: (stats[:actuals][:icuBeds][:currentUsageCovid]  / stats[:actuals][:icuBeds][:capacity].to_f).truncate(2),
+      icu_ratio: (stats[:actuals][:icuBeds][:currentUsageTotal]  / stats[:actuals][:icuBeds][:capacity].to_f).truncate(2),
+      new_deaths: stats[:actuals][:newDeaths]
+    }
+  end
+
+  def _vaccinations_payload(stats)
+    {
+      update_date: stats[:lastUpdatedDate],
+      vaccinations_initiated: stats[:metrics][:vaccinationsInitiatedRatio],
+      vaccinations_completed: stats[:metrics][:vaccinationsCompletedRatio],
+      vaccinations_boosted: stats[:metrics][:vaccinationsAdditionalDoseRatio]
+    }
   end
 
   def work!
@@ -64,29 +95,9 @@ class COVIDActNowHomebusApp < Homebus::App
        stats[:actuals][:hospitalBeds] &&
        stats[:actuals][:icuBeds]
     then
-      cases_payload = {
-        update_date: stats[:lastUpdatedDate],
-        population: stats[:population],
-        positivity_ratio: stats[:metrics][:testPositivityRatio],
-        case_density: stats[:metrics][:caseDensity],
-        new_cases: stats[:actuals][:newCases],
-        infection_rate: stats[:metrics][:infectionRate],
-      }
-      hospitalizations_payload = {
-        update_date: stats[:lastUpdatedDate],
-        hospital_covid_ratio: (stats[:actuals][:hospitalBeds][:currentUsageCovid] / stats[:actuals][:hospitalBeds][:capacity].to_f).truncate(2),
-        hospital_ratio: (stats[:actuals][:hospitalBeds][:currentUsageTotal] / stats[:actuals][:hospitalBeds][:capacity].to_f).truncate(2),
-        icu_covid_ratio: (stats[:actuals][:icuBeds][:currentUsageCovid]  / stats[:actuals][:icuBeds][:capacity].to_f).truncate(2),
-        icu_ratio: (stats[:actuals][:icuBeds][:currentUsageTotal]  / stats[:actuals][:icuBeds][:capacity].to_f).truncate(2),
-        new_deaths: stats[:actuals][:newDeaths]
-      }
-
-      vaccinations_payload = {
-        update_date: stats[:lastUpdatedDate],
-        vaccinations_initiated: stats[:metrics][:vaccinationsInitiatedRatio],
-        vaccinations_completed: stats[:metrics][:vaccinationsCompletedRatio],
-        vaccinations_boosted: stats[:metrics][:vaccinationsAdditionalDoseRatio]
-      }
+      cases_payload = _cases_payload(stats)
+      hospitalizations_payload = _hospitalizations_payload(stats)
+      vaccinations_payload = _vaccinations_payload(stats)
 
       if options[:verbose]
         pp DDC_COVID_CASES, cases_payload

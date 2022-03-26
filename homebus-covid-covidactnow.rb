@@ -3,7 +3,7 @@
 require './options'
 require './app'
 
-aqi_app_options = COVIDActNowHomebusAppOptions.new
+cvan_app_options = COVIDActNowHomebusAppOptions.new
 
-aqi = COVIDActNowHomebusApp.new aqi_app_options.options
-aqi.run!
+cvan = COVIDActNowHomebusApp.new cvan_app_options.options
+cvan.run!
