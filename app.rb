@@ -52,17 +52,22 @@ class COVIDActNowHomebusApp < Homebus::App
   end
 
   def _cases_payload(stats)
-    {
-      update_date: stats[:lastUpdatedDate],
-      population: stats[:population],
-      positivity_ratio: stats[:metrics][:testPositivityRatio],
-      case_density: stats[:metrics][:caseDensity],
-      new_cases: stats[:actuals][:newCases],
-      infection_rate: stats[:metrics][:infectionRate],
-    }
+    if stats[:metrics] && stats[:actuals]
+      {
+        update_date: stats[:lastUpdatedDate],
+        population: stats[:population],
+        positivity_ratio: stats[:metrics][:testPositivityRatio],
+        case_density: stats[:metrics][:caseDensity],
+        new_cases: stats[:actuals][:newCases],
+        infection_rate: stats[:metrics][:infectionRate],
+      }
+    else
+      nil
+    end
   end
 
   def _hospitalizations_payload(stats)
+    if stats[:actuals]
     {
       update_date: stats[:lastUpdatedDate],
       hospital_covid_ratio: (stats[:actuals][:hospitalBeds][:currentUsageCovid] / stats[:actuals][:hospitalBeds][:capacity].to_f).truncate(2),
@@ -71,15 +76,22 @@ class COVIDActNowHomebusApp < Homebus::App
       icu_ratio: (stats[:actuals][:icuBeds][:currentUsageTotal]  / stats[:actuals][:icuBeds][:capacity].to_f).truncate(2),
       new_deaths: stats[:actuals][:newDeaths]
     }
+    else
+      nil
+    end
   end
 
   def _vaccinations_payload(stats)
+    if stats[:metrics]
     {
       update_date: stats[:lastUpdatedDate],
       vaccinations_initiated: stats[:metrics][:vaccinationsInitiatedRatio],
       vaccinations_completed: stats[:metrics][:vaccinationsCompletedRatio],
       vaccinations_boosted: stats[:metrics][:vaccinationsAdditionalDoseRatio]
     }
+    else
+      nil
+    end
   end
 
   def work!
@@ -89,24 +101,25 @@ class COVIDActNowHomebusApp < Homebus::App
       pp stats
     end
 
-    if stats &&
-       stats[:metrics] &&
-       stats[:actuals] &&
-       stats[:actuals][:hospitalBeds] &&
-       stats[:actuals][:icuBeds]
-    then
-      cases_payload = _cases_payload(stats)
-      hospitalizations_payload = _hospitalizations_payload(stats)
-      vaccinations_payload = _vaccinations_payload(stats)
+    cases_payload = _cases_payload(stats)
+    hospitalizations_payload = _hospitalizations_payload(stats)
+    vaccinations_payload = _vaccinations_payload(stats)
 
-      if options[:verbose]
-        pp DDC_COVID_CASES, cases_payload
-        pp DDC_COVID_HOSPITALIZATIONS, hospitalizations_payload
-        pp DDC_COVID_VACCINATIONS, vaccinations_payload
-      end
+    if options[:verbose]
+      pp DDC_COVID_CASES, cases_payload
+      pp DDC_COVID_HOSPITALIZATIONS, hospitalizations_payload
+      pp DDC_COVID_VACCINATIONS, vaccinations_payload
+    end
 
+    if cases_payload
       @device.publish! DDC_COVID_CASES, cases_payload
+    end
+
+    if hospitalizations_payload
       @device.publish! DDC_COVID_HOSPITALIZATIONS, hospitalizations_payload
+    end
+
+    if vaccinations_payload
       @device.publish! DDC_COVID_VACCINATIONS, vaccinations_payload
     end
 
