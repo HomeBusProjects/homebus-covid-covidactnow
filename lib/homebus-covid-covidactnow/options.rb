@@ -1,6 +1,8 @@
 require 'homebus/options'
 
-class COVIDActNowHomebusAppOptions < Homebus::Options
+require 'homebus-covid-covidactnow/version'
+
+class HomebusCovidCovidactnow::Options < Homebus::Options
   def app_options(op)
     fipscode_help = 'the FIPS code of the reporting area'
 
@@ -13,7 +15,7 @@ class COVIDActNowHomebusAppOptions < Homebus::Options
   end
 
   def version
-    '0.0.1'
+    HomebusCovidCovidactnow::VERSION
   end
 
   def name

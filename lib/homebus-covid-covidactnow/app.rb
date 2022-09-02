@@ -7,7 +7,7 @@ require 'dotenv'
 require 'net/http'
 require 'json'
 
-class COVIDActNowHomebusApp < Homebus::App
+class HomebusCovidCovidactnow::App < Homebus::App
   DDC_COVID_CASES = 'org.homebus.experimental.covid-cases'
   DDC_COVID_HOSPITALIZATIONS = 'org.homebus.experimental.covid-hospitalizations'
   DDC_COVID_VACCINATIONS = 'org.homebus.experimental.covid-vaccinations'

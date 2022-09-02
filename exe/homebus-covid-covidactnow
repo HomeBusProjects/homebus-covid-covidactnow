@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'homebus-covid-covidactnow/options'
+require 'homebus-covid-covidactnow/app'
+
+options = HomebusCovidCovidactnow::Options.new
+app = HomebusCovidCovidactnow::App.new(options.options)
+app.run!
+
