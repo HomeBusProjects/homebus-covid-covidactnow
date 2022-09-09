@@ -6,7 +6,7 @@ require 'homebus-covid-covidactnow/app'
 
 require 'homebus/config'
 
-class TestHomebusCovidCovidactnow < HomebusCovidCovidactnow::App
+class TestHomebusCovidCovidactnowApp < HomebusCovidCovidactnow::App
   # override config so that the superclasses don't try to load it during testing
   def initialize(options)
     @config = Hash.new
@@ -64,10 +64,10 @@ describe HomebusCovidCovidactnow::Options do
   end
 end
 
-describe TestHomebusCovidCovidactnow do
+describe HomebusCovidCovidactnow do
   context "Methods" do
     options = HomebusCovidCovidactnow::Options.new
-    app = HomebusCovidCovidactnow::App.new(options)
+    app = TestHomebusCovidCovidactnowApp.new(options)
 
     it "Has a name" do
       expect(app.name).not_to be_nil

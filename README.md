@@ -1,5 +1,8 @@
 # homebus-covid-covidactnow
 
+![rspec](https://github.com/HomeBusProjects/homebus-aqi/actions/workflows/rspec.yml/badge.svg)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
+
 Publishes COVID stats from [Covid Act Now's open API](https://apidocs.covidactnow.org) for regions in the United States. 
 
 ## Configuring
